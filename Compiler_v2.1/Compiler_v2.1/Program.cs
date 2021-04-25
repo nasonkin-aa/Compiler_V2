@@ -11,12 +11,17 @@ namespace Compiler_v2._1
     {
         static void Main(string[] args)
         {
-            StreamReader sr = new StreamReader("input.txt");
-            Lexer lexer = new Lexer();
-         
-            string AllTextProgram = sr.ReadToEnd(); ;
-            lexer.Analysis(AllTextProgram);
-         
+            string dirName = @"C:\Users\andr\source\repos\files\files\Test";
+
+            IEnumerable<string> files = Directory.EnumerateFiles(dirName, "*test*");
+            foreach (string s in files)
+            {
+                StreamReader sr = new StreamReader(s);
+                Lexer lexer = new Lexer();
+                string AllTextProgram = sr.ReadToEnd(); ;
+                lexer.Analysis(AllTextProgram);
+            }
+
             Console.ReadKey();
         }
     }

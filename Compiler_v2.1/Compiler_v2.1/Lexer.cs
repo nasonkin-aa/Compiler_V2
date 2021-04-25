@@ -9,13 +9,14 @@ namespace Compiler_v2._1
 {
     class Lexer
     {
-        //Dictionary<string, string> NamLexema = new Dictionary<string, string>();
 
         char[] sm = new char[1];
         string buf = "";
         private string[] IsReserveWords = { "program", "var", "integer", "real", "bool", "begin", "end", "if", "then", "else", "while", "do", "read", "write", "true", "false" };
         private string[] IsArOperator = { "*", "/", "div", "mod", "and", "or", "+", "-", "=", "<", ">", "<>", "<=", ">=", "in", "not" };
-        enum States { Start, NUM, VAR, FIN, ChoiceLex, ArOp, ResW, COM }
+        private char IsSemicolon = ';';
+        string Output = "";
+        public enum States { Start, Nunber, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, FIN }
         States state;
         StringReader sr;
         int Ln = 0;
@@ -23,11 +24,10 @@ namespace Compiler_v2._1
 
         public List<Lexema> NamLexema = new List<Lexema>();
 
-        void AddLex(List<Lexema> lexemas,int Ln, int Ch,string States, string Buff)
+        void AddLex(List<Lexema> lexemas, int Ln, int Ch, States States, string Buff,string Output)
         {
-            lexemas.Add(new Lexema(Ln, Ch, States, Buff));
+            lexemas.Add(new Lexema(Ln, Ch, States, Buff, Output));
         }
-
         private void GetNext()
         {
             sr.Read(sm, 0, 1);
@@ -45,17 +45,20 @@ namespace Compiler_v2._1
         public void Analysis(string AllTextProgram)
         {
             sr = new StringReader(AllTextProgram);
+
             while (state != States.FIN)
             {
                 switch (state)
                 {
                     case States.Start:
-                        if (sm[0] == ' ')
+                        if (sm[0] == ' ' || sm[0] == '\t'  || sm[0] == '\r')
                         {
                             GetNext();
                         }
-                        else if(sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r')
+
+                        else if(sm[0] == '\n' || sm[0] == '\0')
                         {
+
                             GetNext();
                             Ch = 0;
                             Ln++;
@@ -68,11 +71,27 @@ namespace Compiler_v2._1
                             state = States.ChoiceLex;
                             GetNext();
                         }
+
                         else if (Char.IsDigit(sm[0]))
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            state = States.NUM;
+                            state = States.Nunber;
+                            GetNext();
+                        }
+                        else if (sm[0] == IsSemicolon)
+                        {
+                            ClearBuf();
+                            AddBuf(sm[0]);
+                            state = States.Semicolon;
+                            GetNext();
+                        }
+
+                        else if (IsArOperator.Any(str => str == sm[0].ToString()))
+                        {
+                            ClearBuf();
+                            AddBuf(sm[0]);
+                            state = States.ArOperator;
                             GetNext();
                         }
 
@@ -80,46 +99,47 @@ namespace Compiler_v2._1
                         {
                             AddBuf(sm[0]);
                             state = States.FIN;
-                            
                         }
+                        
+                        
                         break;
+
                     case States.ChoiceLex:
                         if (!IsReserveWords.Any(str => str == buf)
                             && !IsArOperator.Any(str => str == buf) 
-                            && sm[0] == ' ')
+                            && ( sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
-                            state = States.VAR;
-                           
-
+                            state = States.Variable;
                         }
+
                         else if (IsReserveWords.Any(str => str == buf) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
-
-                            state = States.ResW;
-
+                            state = States.ReserveWords;
                         }
+
                         else if (IsArOperator.Any(str => str == buf) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
 
-                            state = States.ArOp;
+                            state = States.ArOperator;
                         }
+
                         else 
                         {
                             AddBuf(sm[0]);
                             GetNext();
                         }
                     break;
-                    case States.NUM:
-                        if (Int32.TryParse(buf, out int x) && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                    case States.Nunber:
+                        if (Int32.TryParse(buf, out int x) 
+                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
-                            
-                            Console.WriteLine( Ln.ToString()+Ch.ToString() + "num");
+                            AddLex(NamLexema,Ln, Ch, state, buf,Output);
                             state = States.Start;
-                            AddLex(NamLexema,Ln, Ch, "num", buf);
                             ClearBuf();
                         }
+
                         else
                         {
                             AddBuf(sm[0]);
@@ -127,37 +147,48 @@ namespace Compiler_v2._1
                         }
                         break;
 
-                    case States.VAR:
+                    case States.Semicolon:
+                        AddLex(NamLexema, Ln, Ch, state, buf, Output);
                         ClearBuf();
-                        Console.WriteLine("VAR");
                         state = States.Start;
                         break;
 
-                    case States.ResW:
+                    case States.Variable:
+                        AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                        ClearBuf();                      
+                        state = States.Start;
+                        break;
+
+                    case States.ReserveWords:
+                        AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                        state = States.Start;                      
+                        ClearBuf();
+                        break;
+
+                    case States.ArOperator:
+                        if (IsArOperator.Any(str => str == buf) && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                        {
+                            AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                            ClearBuf();
+                            state = States.Start;
+                        }
+                        else if(sm[0] != ' ' || sm[0] != '\n' || sm[0] != '\t' || sm[0] != '\0' || sm[0] != '\r')//
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                        }
                         
-                        Console.WriteLine("resW");
-                        state = States.Start;
-                        AddLex(NamLexema, Ln, Ch, "resW", buf);
-                        ClearBuf();
                         break;
-                    case States.ArOp:
-                        ClearBuf();
-                        Console.WriteLine("ArOp");
-                        state = States.Start;
-                        break;
-
-
                     case States.FIN:
-                        
-                        //Console.WriteLine(buf);
                         break;
                 }
-
             }
             //Console.WriteLine(buf);
             for (int i = 0; i < NamLexema.Count; i++)
             {
-                Console.WriteLine(Convert.ToString(NamLexema[i].Ln) + Convert.ToString(NamLexema[i].Ch)+ NamLexema[i].Stats + NamLexema[i].Buff);
+                Console.WriteLine("\t"+Convert.ToString(NamLexema[i].Ln) +":"
+                    + Convert.ToString(NamLexema[i].Ch)+ "\t" + NamLexema[i].States 
+                    + "\t" +"'"+ NamLexema[i].Buff+"'"+"\t"+ NamLexema[i].Output);
             }
         }
         
