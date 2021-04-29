@@ -14,13 +14,13 @@ namespace Compiler_v2._1
         public Lexer.States States;
         public readonly string Output;
 
-        public Lexema(int ln, int ch, Lexer.States states, string buff,string output)
+        public Lexema(int ln, int ch, Lexer.States states, string buff,string value)
         {
             Ln = ln;
             Ch = ch;
             this.States = states;
             Buff = buff;
-            Output = output;
+            Output = value;
 
         }
     }

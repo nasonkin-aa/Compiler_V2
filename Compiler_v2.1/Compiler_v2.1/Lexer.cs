@@ -9,9 +9,8 @@ namespace Compiler_v2._1
 {
     class Lexer
     {
-        string DirNameResult = @"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\Tests";
-
-
+        string DirNameResult = @"C:\Users\andr\Desktop\Compiler.V2\Compiler_V2\Compiler_v2.1\Compiler_v2.1\Tests";
+        string Path = "";
         char[] sm = new char[1];
         string buf = "";
         public string result = "";
@@ -27,9 +26,14 @@ namespace Compiler_v2._1
 
         public List<Lexema> NamLexema = new List<Lexema>();
 
-        void AddLex(List<Lexema> lexemas, int Ln, int Ch, States States, string Buff,string Output)
+        public Lexer(string Path)
         {
-            lexemas.Add(new Lexema(Ln, Ch, States, Buff, Output));
+            this.Path = Path;
+        }
+
+        void AddLex(int Ln, int Ch, States States, string Buff,string Output)
+        {
+            this.NamLexema.Add(new Lexema(Ln, Ch, States, Buff, Output));
         }
         private void GetNext()
         {
@@ -45,10 +49,11 @@ namespace Compiler_v2._1
         {
             buf += symb;
         }
-        public void Analysis(string AllTextProgram)
+        public void GetLexem(string AllTextProgram)
         {
             sr = new StringReader(AllTextProgram);
-            IEnumerable<string> Code = Directory.EnumerateFiles(DirNameResult, "*result*");
+            string PathResultFile = Path.Remove(Path.LastIndexOf('(')) + "(result).txt"; 
+            
 
             while (state != States.FIN)
             {
@@ -135,12 +140,13 @@ namespace Compiler_v2._1
                             GetNext();
                         }
                     break;
+
                     case States.Nunber:
                         if (Int32.TryParse(buf, out int x) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
                             Output = buf;
-                            AddLex(NamLexema,Ln, Ch, state, buf,Output);
+                            AddLex(Ln, Ch, state, buf,Output);
                             state = States.Start;
                             ClearBuf();
                         }
@@ -153,19 +159,19 @@ namespace Compiler_v2._1
                         break;
 
                     case States.Semicolon:
-                        AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                        AddLex( Ln, Ch, state, buf, Output);
                         ClearBuf();
                         state = States.Start;
                         break;
 
                     case States.Variable:
-                        AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                        AddLex(Ln, Ch, state, buf, Output);
                         ClearBuf();                      
                         state = States.Start;
                         break;
 
                     case States.ReserveWords:
-                        AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                        AddLex(Ln, Ch, state, buf, Output);
                         state = States.Start;                      
                         ClearBuf();
                         break;
@@ -173,7 +179,7 @@ namespace Compiler_v2._1
                     case States.ArOperator:
                         if (IsArOperator.Any(str => str == buf) && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
-                            AddLex(NamLexema, Ln, Ch, state, buf, Output);
+                            AddLex( Ln, Ch, state, buf, Output);
                             ClearBuf();
                             state = States.Start;
                         }
@@ -188,6 +194,7 @@ namespace Compiler_v2._1
                         break;
                 }
             }
+            var ResultFile = new StreamReader(PathResultFile);
             //Console.WriteLine(buf);
             for (int i = 0; i < NamLexema.Count; i++)
             {
@@ -199,12 +206,11 @@ namespace Compiler_v2._1
 
 
                 //StreamReader f = new StreamReader("test.txt");
-                foreach (string file in Code)
-                {
-                    StreamReader sr = new StreamReader(file);
-                    string FileResult = sr.ReadLine();
-                    Console.WriteLine(FileResult);
-                    if (result == FileResult)
+                
+                    
+                    string LineResult = ResultFile.ReadLine();
+                    Console.WriteLine(LineResult);
+                    if (result == LineResult)
                     {
                         Console.WriteLine("ok");
                     }
@@ -213,7 +219,7 @@ namespace Compiler_v2._1
                         Console.WriteLine("error");
                     }
 
-                }
+                
 
 
             }
