@@ -11,15 +11,16 @@ namespace Compiler_v2._1
     {
         static void Main(string[] args)
         {
-            string dirName = @"C:\Users\andr\source\repos\files\files\Test";
+            string DirNameCode = @"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\Tests";
 
-            IEnumerable<string> files = Directory.EnumerateFiles(dirName, "*test*");
-            foreach (string s in files)
+            IEnumerable<string> Code = Directory.EnumerateFiles(DirNameCode, "*code*");
+            foreach (string s in Code)
             {
-                StreamReader sr = new StreamReader(s);
                 Lexer lexer = new Lexer();
+                StreamReader sr = new StreamReader(s);
                 string AllTextProgram = sr.ReadToEnd(); ;
                 lexer.Analysis(AllTextProgram);
+                
             }
 
             Console.ReadKey();

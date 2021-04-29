@@ -9,9 +9,12 @@ namespace Compiler_v2._1
 {
     class Lexer
     {
+        string DirNameResult = @"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\Tests";
+
 
         char[] sm = new char[1];
         string buf = "";
+        public string result = "";
         private string[] IsReserveWords = { "program", "var", "integer", "real", "bool", "begin", "end", "if", "then", "else", "while", "do", "read", "write", "true", "false" };
         private string[] IsArOperator = { "*", "/", "div", "mod", "and", "or", "+", "-", "=", "<", ">", "<>", "<=", ">=", "in", "not" };
         private char IsSemicolon = ';';
@@ -45,6 +48,7 @@ namespace Compiler_v2._1
         public void Analysis(string AllTextProgram)
         {
             sr = new StringReader(AllTextProgram);
+            IEnumerable<string> Code = Directory.EnumerateFiles(DirNameResult, "*result*");
 
             while (state != States.FIN)
             {
@@ -107,19 +111,19 @@ namespace Compiler_v2._1
                     case States.ChoiceLex:
                         if (!IsReserveWords.Any(str => str == buf)
                             && !IsArOperator.Any(str => str == buf) 
-                            && ( sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                            && ( sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r' || sm[0] == ';'))
                         {
                             state = States.Variable;
                         }
 
                         else if (IsReserveWords.Any(str => str == buf) 
-                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r' || sm[0] == ';'))
                         {
                             state = States.ReserveWords;
                         }
 
                         else if (IsArOperator.Any(str => str == buf) 
-                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r' || sm[0] == ';'))
                         {
 
                             state = States.ArOperator;
@@ -135,6 +139,7 @@ namespace Compiler_v2._1
                         if (Int32.TryParse(buf, out int x) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
+                            Output = buf;
                             AddLex(NamLexema,Ln, Ch, state, buf,Output);
                             state = States.Start;
                             ClearBuf();
@@ -172,7 +177,7 @@ namespace Compiler_v2._1
                             ClearBuf();
                             state = States.Start;
                         }
-                        else if(sm[0] != ' ' || sm[0] != '\n' || sm[0] != '\t' || sm[0] != '\0' || sm[0] != '\r')//
+                        else if(sm[0] != ' ' || sm[0] != '\n' || sm[0] != '\t' || sm[0] != '\0' || sm[0] != '\r')
                         {
                             AddBuf(sm[0]);
                             GetNext();
@@ -186,9 +191,31 @@ namespace Compiler_v2._1
             //Console.WriteLine(buf);
             for (int i = 0; i < NamLexema.Count; i++)
             {
-                Console.WriteLine("\t"+Convert.ToString(NamLexema[i].Ln) +":"
-                    + Convert.ToString(NamLexema[i].Ch)+ "\t" + NamLexema[i].States 
-                    + "\t" +"'"+ NamLexema[i].Buff+"'"+"\t"+ NamLexema[i].Output);
+               // result = "a";
+                result = "\t" + Convert.ToString(NamLexema[i].Ln) + ":"
+                    + Convert.ToString(NamLexema[i].Ch) + "\t" + NamLexema[i].States
+                    + "\t" + "'" + NamLexema[i].Buff + "'"+".";
+                Console.WriteLine(result);
+
+
+                //StreamReader f = new StreamReader("test.txt");
+                foreach (string file in Code)
+                {
+                    StreamReader sr = new StreamReader(file);
+                    string FileResult = sr.ReadLine();
+                    Console.WriteLine(FileResult);
+                    if (result == FileResult)
+                    {
+                        Console.WriteLine("ok");
+                    }
+                    else
+                    {
+                        Console.WriteLine("error");
+                    }
+
+                }
+
+
             }
         }
         
