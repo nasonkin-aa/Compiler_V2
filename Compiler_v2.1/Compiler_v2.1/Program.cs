@@ -21,7 +21,6 @@ namespace Compiler_v2._1
                 StreamReader sr = new StreamReader(s);
                 string AllTextProgram = sr.ReadToEnd(); ;
                 lexer.GetLexem(AllTextProgram);
-                
             }
 
             Console.ReadKey();

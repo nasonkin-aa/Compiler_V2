@@ -25,8 +25,8 @@ namespace Compiler_v2._1
         private char IsSemicolon = ';';
 
         string Value = "";
-        public enum States { Start, Nunber, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, FIN }
-        States Lexema;
+        public enum State { Start, Nunber, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float, FIN }
+        State state;
         StringReader sr;
         int Ln = 0;
         int Ch = 0;
@@ -37,7 +37,7 @@ namespace Compiler_v2._1
         {
             this.Path = Path;
         }
-        void AddLex(int Ln, int Ch, States Lexema, string Buff,string Value)
+        void AddLex(int Ln, int Ch, State Lexema, string Buff,string Value)
         {
             this.NamLexema.Add(new Lexema(Ln, Ch, Lexema, Buff, Value));
         }
@@ -50,6 +50,10 @@ namespace Compiler_v2._1
         {
             buf = "";
         }
+        private void AddValue()
+        {
+            Value = buf;
+        }
 
         private void AddBuf(char symb)
         {
@@ -60,11 +64,11 @@ namespace Compiler_v2._1
             sr = new StringReader(AllTextProgram);
             string PathResultFile = Path.Remove(Path.LastIndexOf('(')) + "(result).txt"; 
 
-            while (Lexema != States.FIN)
+            while (state != State.FIN)
             {
-                switch (Lexema)
+                switch (state)
                 {
-                    case States.Start:
+                    case State.Start:
                         if (sm[0] == ' ' || sm[0] == '\t'  || sm[0] == '\r')
                         {
                             GetNext();
@@ -72,7 +76,6 @@ namespace Compiler_v2._1
 
                         else if(sm[0] == '\n' || sm[0] == '\0')
                         {
-
                             GetNext();
                             Ch = 0;
                             Ln++;
@@ -82,7 +85,7 @@ namespace Compiler_v2._1
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            Lexema = States.ChoiceLex;
+                            state = State.ChoiceLex;
                             GetNext();
                         }
 
@@ -90,56 +93,55 @@ namespace Compiler_v2._1
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            Lexema = States.Nunber;
+                            state = State.Nunber;
                             GetNext();
                         }
                         else if (sm[0] == IsSemicolon)
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            Lexema = States.Semicolon;
+                            state = State.Semicolon;
                             GetNext();
                         }
-
-                        else if (IsArOperator.Any(str => str == sm[0].ToString()))
+                        
+                        //else if (IsArOperator.Any(str => str == sm[0].ToString()))
+                        else if (IsArOperator.Contains(sm[0].ToString()))
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            Lexema = States.ArOperator;
+                            state = State.ArOperator;
                             GetNext();
                         }
 
                         else if (sm[0] == '.')
                         {
                             AddBuf(sm[0]);
-                            Lexema = States.FIN;
+                            state = State.FIN;
                         }
-                        
-                        
                         break;
 
-                    case States.ChoiceLex:
-                        if (!IsReserveWords.Any(str => str == buf)
-                            && !IsArOperator.Any(str => str == buf) 
+                    case State.ChoiceLex:
+                        if (!IsReserveWords.Contains(buf)
+                            && !IsArOperator.Contains(buf) 
                             && ( sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' 
                             || sm[0] == '\r' || sm[0] == ';'))
                         {
-                            Lexema = States.Variable;
+                            state = State.Variable;
                         }
 
-                        else if (IsReserveWords.Any(str => str == buf) 
+                        else if (IsReserveWords.Contains(buf) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' 
                             || sm[0] == '\r' || sm[0] == ';'))
                         {
-                            Lexema = States.ReserveWords;
+                            state = State.ReserveWords;
                         }
 
-                        else if (IsArOperator.Any(str => str == buf) 
+                        else if (IsArOperator.Contains(buf)
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' 
                             || sm[0] == '\r' || sm[0] == ';'))
                         {
 
-                            Lexema = States.ArOperator;
+                            state = State.ArOperator;
                         }
 
                         else 
@@ -149,14 +151,19 @@ namespace Compiler_v2._1
                         }
                     break;
 
-                    case States.Nunber:
+                    case State.Nunber:
                         if (Int32.TryParse(buf, out int x) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
-                            Value = buf;
-                            AddLex(Ln, Ch, Lexema, buf,Value);
-                            Lexema = States.Start;
-                            ClearBuf();
+                           
+                            
+                            state = State.Integer;
+                        }
+                        else if (sm[0] == '.')
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                            state = State.Float;
                         }
 
                         else
@@ -166,43 +173,73 @@ namespace Compiler_v2._1
                         }
                         break;
 
-                    case States.Semicolon:
-                        AddLex( Ln, Ch, Lexema, buf, Value);
+                    case State.Semicolon:
+                        AddValue();
+                        AddLex( Ln, Ch, state, buf, Value);
                         ClearBuf();
-                        Lexema = States.Start;
+                        state = State.Start;
                         break;
 
-                    case States.Variable:
-                        AddLex(Ln, Ch, Lexema, buf, Value);
-                        ClearBuf();                      
-                        Lexema = States.Start;
-                        break;
-
-                    case States.ReserveWords:
-                        AddLex(Ln, Ch, Lexema, buf, Value);
-                        Lexema = States.Start;                      
-                        ClearBuf();
-                        break;
-
-                    case States.ArOperator:
-                        if (IsArOperator.Any(str => str == buf) 
-                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                    case State.Float:
+                        if (
+                            sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r')
                         {
-                            AddLex( Ln, Ch, Lexema, buf, Value);
+                            AddValue();
+                            AddLex(Ln, Ch, state, buf, Value);
                             ClearBuf();
-                            Lexema = States.Start;
-                        }
-                        else if(sm[0] != ' ' || sm[0] != '\n' || sm[0] != '\t' || sm[0] != '\0' || sm[0] != '\r')
+                            state = State.Start;
+                        }else
                         {
                             AddBuf(sm[0]);
                             GetNext();
+
                         }
                         
                         break;
-                    case States.FIN:
+
+                    case State.Integer:
+                        AddValue();
+                        AddLex(Ln, Ch, state, buf, Value);
+                        ClearBuf();
+                        state = State.Start;
+                        break;
+
+                    case State.Variable:
+                        AddValue();
+                        AddLex(Ln, Ch, state, buf, Value);
+                        ClearBuf();                      
+                        state = State.Start;
+                        break;
+
+                    case State.ReserveWords:
+                        AddValue();
+                        AddLex(Ln, Ch, state, buf, Value);
+                        state = State.Start;                      
+                        ClearBuf();
+                        break;
+
+                    case State.ArOperator:
+                        if (IsArOperator.Contains(buf)
+                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                        {
+                            AddValue();
+                            AddLex( Ln, Ch, state, buf, Value);
+                            ClearBuf();
+                            state = State.Start;
+                        }
+                        //else if(sm[0] != ' ' || sm[0] != '\n' || sm[0] != '\t' || sm[0] != '\0' || sm[0] != '\r')
+                        //{
+                        //    AddBuf(sm[0]);
+                        //    GetNext();
+                        //}
+                        //дописать
+                        break;
+                    case State.FIN:
                         break;
                 }
             }
+
+
             Console.WriteLine("Файл-" + (FileCounter));
 
             var ResultFile = new StreamReader(PathResultFile);
@@ -211,8 +248,9 @@ namespace Compiler_v2._1
             {
                 result = Convert.ToString(NamLexema[i].Ln) + ":"
                     + Convert.ToString(NamLexema[i].Ch) + "\t" + NamLexema[i].States
-                    + "\t" + "'" + NamLexema[i].Buff + "'"+".";
+                    + "\t" + "'" + NamLexema[i].Buff + "'" + "\t" + NamLexema[i].Value + ".";
                 Console.WriteLine(result);
+
 
                 string LineResult = ResultFile.ReadLine();
                 //Console.WriteLine(LineResult);
@@ -224,10 +262,11 @@ namespace Compiler_v2._1
                 else
                 {
                     TestResult = "Тест не пройден";
-                    break;
+                   // break;
                 }
 
             }
+
             Console.WriteLine(TestResult);
 
         }

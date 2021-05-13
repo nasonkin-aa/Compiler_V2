@@ -1,6 +1,0 @@
-1:5	ReserveWords	'begin'.
-2:2	Variable	'a'.
-2:5	ArOperator	':='.
-2:7	Variable	'b'.
-2:8	Semicolon	';'.
-3:3	ReserveWords	'end'.
