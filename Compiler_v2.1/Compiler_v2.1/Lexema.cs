@@ -14,6 +14,8 @@ namespace Compiler_v2._1
         public Lexer.State States;
         public readonly string Value;
 
+
+
         public Lexema(int Ln, int Ch, Lexer.State Lexema, string Buff,string Value)
         {
             this.Ln = Ln;   
