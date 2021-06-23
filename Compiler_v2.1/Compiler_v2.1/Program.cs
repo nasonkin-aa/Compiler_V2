@@ -15,6 +15,7 @@ namespace Compiler_v2._1
             string result = "";
             string TestResult = "";
             string LineResult = "";
+
             Lexema Lex;
             IEnumerable<string> CodeFile = Directory.EnumerateFiles(DirNameCode, "*code*");
             foreach (string s in CodeFile)
@@ -23,21 +24,19 @@ namespace Compiler_v2._1
                 var ResultFile = new StreamReader(PathResultFile);
 
                 Lexer.FileCounter++;
-                Lexer lexer = new Lexer(s);
-                StreamReader StRead = new StreamReader(s);
-                
-                string AllTextProgram = StRead.ReadToEnd();
+                var StRead = new BinaryReader(File.OpenRead(s));
+                Lexer lexer = new Lexer(StRead);
 
-                Lex = lexer.GetLexem(AllTextProgram);
-                while (Lex.Ch != 0 )
+                Lex = lexer.GetLexem();
+
+                while (Lex.Buff != null )
                 {
-                    Lex = lexer.GetLexem(AllTextProgram);
                     LineResult = ResultFile.ReadLine();
-                    Console.WriteLine(LineResult);
+                    //Console.WriteLine(LineResult);
 
                     result = Convert.ToString(Lex.Ln) + ":"
                     + Convert.ToString(Lex.Ch) + "\t" + Lex.States
-                    + "\t" + "'" + Lex.Buff + "'" + "\t" + Lex.Value + ".";
+                    + "\t" + "'" + Lex.Buff + "'" + "\t" + Lex.Value;
                     Console.WriteLine(result);
 
                     if (result == LineResult)
@@ -49,7 +48,7 @@ namespace Compiler_v2._1
                         TestResult = "Тест не пройден";
                         // break;
                     }
-//Console.WriteLine(Lex);
+                    Lex = lexer.GetLexem();
                 }
             }
 

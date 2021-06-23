@@ -11,18 +11,18 @@ namespace Compiler_v2._1
         public readonly int Ln;
         public readonly int Ch;
         public readonly string Buff;
-        public Lexer.State States;
+        public string States;
         public readonly string Value;
 
 
 
-        public Lexema(int Ln, int Ch, Lexer.State Lexema, string Buff,string Value)
+        public Lexema(int ln, int ch, string lexema, string buff,string value)
         {
-            this.Ln = Ln;   
-            this.Ch = Ch;
-            this.States = Lexema;
-            this.Buff = Buff;
-            this.Value = Value;
+           Ln = ln;   
+           Ch = ch;
+           States = lexema;
+           Buff = buff;
+           Value = value;
 
         }
     }

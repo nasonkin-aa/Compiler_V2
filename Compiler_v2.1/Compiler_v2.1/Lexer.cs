@@ -25,26 +25,30 @@ namespace Compiler_v2._1
         private char IsSemicolon = ';';
 
         string Value = "";
-        public enum State { Start, Nunber, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float, FIN }
+        public enum State { Start, Number, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float, FIN }
         State state;
-        StringReader sr;
+        BinaryReader Reader;
         int Ln = 0;
         int Ch = 0;
-
+        string LexName;
         //public List<Lexema> NamLexema = new List<Lexema>();
 
-        public Lexer(string Path)
+        public Lexer(BinaryReader reader)
         {
-            this.Path = Path;
+            Reader = reader;
         }
-         public Lexema AddLex(int Ln, int Ch, State Lexema, string Buff,string Value)
-        {
-            return new Lexema(Ln, Ch, Lexema, Buff, Value);
-        }
+         public Lexema AddLex(int Ln, int Ch, string LexName, string Buff,string Value)
+         {
+            return new Lexema(Ln, Ch, LexName, Buff, Value);
+         }
         private void GetNext()
         {
-            sr.Read(sm, 0, 1);
+            sm[0] = Reader.ReadChar();
             Ch++;
+        }
+        private void AddLexName()
+        {
+            LexName = state.ToString();
         }
         private void ClearBuf()
         {
@@ -59,10 +63,9 @@ namespace Compiler_v2._1
         {
             buf += symb;
         }
-        public Lexema GetLexem(string AllTextProgram)
+        public Lexema GetLexem()
         {
             
-            sr = new StringReader(AllTextProgram);
 
             ClearBuf();
             while (sm[0] != null || buf != null )
@@ -94,7 +97,7 @@ namespace Compiler_v2._1
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            state = State.Nunber;
+                            state = State.Number;
                             GetNext();
                         }
                         else if (sm[0] == IsSemicolon)
@@ -148,12 +151,10 @@ namespace Compiler_v2._1
                         }
                     break;
 
-                    case State.Nunber:
+                    case State.Number:
                         if (Int32.TryParse(buf, out int x) 
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
-                           
-                            
                             state = State.Integer;
                         }
                         else if (sm[0] == '.')
@@ -173,19 +174,19 @@ namespace Compiler_v2._1
                     case State.Semicolon:
                         AddValue();
                         ClearBuf();
+                        AddLexName();
+
                         state = State.Start;
-                        return new Lexema(Ln, Ch, state, buf, Value);
-
-
+                        return new Lexema(Ln, Ch, LexName, buf, Value);
 
                     case State.Float:
                         if (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r')
                         {
                             AddValue();
-                            
-                            ClearBuf();
+                            AddLexName();
+
                             state = State.Start ;
-                            return new Lexema(Ln, Ch, state, buf, Value);
+                            return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         }
                         else
@@ -199,20 +200,26 @@ namespace Compiler_v2._1
 
                     case State.Integer:
                         AddValue();
+                        AddLexName();
+
                         state = State.Start;
-                        return new Lexema(Ln, Ch, state, buf, Value);
+                        return new Lexema(Ln, Ch, LexName, buf, Value);
 
                     case State.Variable:
                         AddValue();
+                        AddLexName();
+
                         state = State.Start;
-                        return new Lexema(Ln, Ch, state, buf, Value);
+                        return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         
 
                     case State.ReserveWords:
                         AddValue();
+                        AddLexName();
+
                         state = State.Start;                      
-                        return new Lexema( Ln, Ch, state, buf, Value);
+                        return new Lexema( Ln, Ch, LexName, buf, Value);
 
                         
 
@@ -221,9 +228,10 @@ namespace Compiler_v2._1
                             && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
                         {
                             AddValue();
-                          
+                            AddLexName();
+
                             state = State.Start;
-                            return new Lexema(Ln, Ch, state, buf, Value);
+                            return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         }
                         //else if(sm[0] != ' ' || sm[0] != '\n' || sm[0] != '\t' || sm[0] != '\0' || sm[0] != '\r')
@@ -235,7 +243,8 @@ namespace Compiler_v2._1
                         break;
                 }
             }
-            return new Lexema(0, 0, State.FIN, "", "");
+            AddLexName();
+            return new Lexema(0, 0, LexName, "", "");
 
 
 
