@@ -1,13 +1,5 @@
-program
-var 
-integer
-real
-bool
-begin
-end
-if
-then
-else
-while
-do
-read .
+7
+9
+8
+56
+var

@@ -25,7 +25,7 @@ namespace Compiler_v2._1
         private char IsSemicolon = ';';
 
         string Value = "";
-        public enum State { Start, Number, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float, FIN }
+        public enum State { Start, Number, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float}
         State state;
         BinaryReader Reader;
         int Ln = 0;
@@ -39,12 +39,22 @@ namespace Compiler_v2._1
         }
          public Lexema AddLex(int Ln, int Ch, string LexName, string Buff,string Value)
          {
+            Ch = Ch - 1;
             return new Lexema(Ln, Ch, LexName, Buff, Value);
          }
         private void GetNext()
         {
-            sm[0] = Reader.ReadChar();
-            Ch++;
+            if (Reader.PeekChar() != -1)
+            {
+                sm[0] = Reader.ReadChar();
+                Ch++;
+            }
+            else
+            {
+                buf = null;
+                
+            }
+          
         }
         private void AddLexName()
         {
@@ -65,10 +75,10 @@ namespace Compiler_v2._1
         }
         public Lexema GetLexem()
         {
-            
 
             ClearBuf();
-            while (sm[0] != null || buf != null )
+
+            while ( buf != null )
             {
                 switch (state)
                 {
@@ -85,7 +95,7 @@ namespace Compiler_v2._1
                             Ln++;
                         }
 
-                        else if (Char.IsLetter(sm[0]))
+                        else if (Char.IsLetter(sm[0]) || sm[0] == '_')
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
@@ -116,10 +126,7 @@ namespace Compiler_v2._1
                             state = State.ArOperator;
                             GetNext();
                         }
-
-                  
                         break;
-
                     case State.ChoiceLex:
                         if (!IsReserveWords.Contains(buf)
                             && !IsArOperator.Contains(buf) 
@@ -203,6 +210,7 @@ namespace Compiler_v2._1
                         AddLexName();
 
                         state = State.Start;
+                        AddLex(Ln, Ch, LexName, buf, Value);
                         return new Lexema(Ln, Ch, LexName, buf, Value);
 
                     case State.Variable:
@@ -210,6 +218,7 @@ namespace Compiler_v2._1
                         AddLexName();
 
                         state = State.Start;
+                        AddLex(Ln, Ch, LexName, buf, Value);
                         return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         
@@ -241,10 +250,14 @@ namespace Compiler_v2._1
                         //}
                         //дописать
                         break;
+
                 }
+                
             }
-            AddLexName();
+            Console.WriteLine("biba");
             return new Lexema(0, 0, LexName, "", "");
+
+            AddLexName();
 
 
 

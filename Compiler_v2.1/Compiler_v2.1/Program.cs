@@ -29,7 +29,7 @@ namespace Compiler_v2._1
 
                 Lex = lexer.GetLexem();
 
-                while (Lex.Buff != null )
+                while (Lex.Ch != 0 )
                 {
                     LineResult = ResultFile.ReadLine();
                     //Console.WriteLine(LineResult);
@@ -46,10 +46,15 @@ namespace Compiler_v2._1
                     else
                     {
                         TestResult = "Тест не пройден";
-                        // break;
+                        //break;
                     }
                     Lex = lexer.GetLexem();
+                    //Console.WriteLine(TestResult);
+
                 }
+                
+                Console.WriteLine(TestResult);
+              
             }
 
             Console.ReadKey();

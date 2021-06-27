@@ -1,13 +1,2 @@
-1:7	ReserveWords	'program'.
-2:3	ReserveWords	'var'.
-3:7	ReserveWords	'integer'.
-4:4	ReserveWords	'real'.
-5:4	ReserveWords	'bool'.
-6:5	ReserveWords	'begin'.
-7:3	ReserveWords	'end'.
-8:2	ReserveWords	'if'.
-9:4	ReserveWords	'then'.
-10:4	ReserveWords	'else'.
-11:5	ReserveWords	'while'.
-12:2	ReserveWords	'do'.
-13:4	ReserveWords	'read'.
+1:7	ReserveWords	'program'	program
+2:3	ReserveWords	'var'	var
