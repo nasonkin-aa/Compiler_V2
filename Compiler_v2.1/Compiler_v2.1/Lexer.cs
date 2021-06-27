@@ -13,7 +13,6 @@ namespace Compiler_v2._1
         public static int FileCounter;
         string Path = "";
 
-        
         Program program = new Program();
         char[] sm = new char[1];
         string buf = "";
@@ -25,7 +24,7 @@ namespace Compiler_v2._1
         private char IsSemicolon = ';';
 
         string Value = "";
-        public enum State { Start, Number, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float}
+        public enum State { Start, Number, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Float, Error}
         State state;
         BinaryReader Reader;
         int Ln = 0;
@@ -33,13 +32,17 @@ namespace Compiler_v2._1
         string LexName;
         //public List<Lexema> NamLexema = new List<Lexema>();
 
+        public bool Check1 = true;
+        public bool Check2 = true;
+        
         public Lexer(BinaryReader reader)
         {
             Reader = reader;
         }
          public Lexema AddLex(int Ln, int Ch, string LexName, string Buff,string Value)
          {
-            Ch = Ch - 1;
+            Check2 = false;
+            //Ch = Ch - 1;
             return new Lexema(Ln, Ch, LexName, Buff, Value);
          }
         private void GetNext()
@@ -51,8 +54,8 @@ namespace Compiler_v2._1
             }
             else
             {
-                buf = null;
-                
+                sm[0] = ' ';
+                Check1 = false;
             }
           
         }
@@ -75,11 +78,11 @@ namespace Compiler_v2._1
         }
         public Lexema GetLexem()
         {
-
             ClearBuf();
 
-            while ( buf != null )
+            while (  Check2 || Check1   )
             {
+                Check2 = true;
                 switch (state)
                 {
                     case State.Start:
@@ -126,6 +129,10 @@ namespace Compiler_v2._1
                             state = State.ArOperator;
                             GetNext();
                         }
+                        else
+                        {
+                            state = State.Error;
+                        }
                         break;
                     case State.ChoiceLex:
                         if (!IsReserveWords.Contains(buf)
@@ -151,12 +158,16 @@ namespace Compiler_v2._1
                             state = State.ArOperator;
                         }
 
-                        else 
+                        else if (Char.IsLetter(sm[0]) || Char.IsDigit(sm[0]))
                         {
                             AddBuf(sm[0]);
                             GetNext();
                         }
-                    break;
+                        else
+                        {
+                            state = State.Error;
+                        }
+                        break;
 
                     case State.Number:
                         if (Int32.TryParse(buf, out int x) 
@@ -184,6 +195,7 @@ namespace Compiler_v2._1
                         AddLexName();
 
                         state = State.Start;
+                        Check2 = false;
                         return new Lexema(Ln, Ch, LexName, buf, Value);
 
                     case State.Float:
@@ -193,6 +205,7 @@ namespace Compiler_v2._1
                             AddLexName();
 
                             state = State.Start ;
+                            Check2 = false;
                             return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         }
@@ -210,7 +223,7 @@ namespace Compiler_v2._1
                         AddLexName();
 
                         state = State.Start;
-                        AddLex(Ln, Ch, LexName, buf, Value);
+                        Check2 = false;                     
                         return new Lexema(Ln, Ch, LexName, buf, Value);
 
                     case State.Variable:
@@ -218,16 +231,18 @@ namespace Compiler_v2._1
                         AddLexName();
 
                         state = State.Start;
-                        AddLex(Ln, Ch, LexName, buf, Value);
+                        Check2 = false;
+
                         return new Lexema(Ln, Ch, LexName, buf, Value);
 
-                        
 
                     case State.ReserveWords:
                         AddValue();
                         AddLexName();
 
-                        state = State.Start;                      
+                        state = State.Start;
+                        Check2 = false;
+
                         return new Lexema( Ln, Ch, LexName, buf, Value);
 
                         
@@ -240,6 +255,8 @@ namespace Compiler_v2._1
                             AddLexName();
 
                             state = State.Start;
+                            Check2 = false;
+
                             return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         }
@@ -251,43 +268,23 @@ namespace Compiler_v2._1
                         //дописать
                         break;
 
+                    case State.Error:
+                        AddValue();
+                        AddLexName();
+
+                        state = State.Start;
+                        Check1 = false;
+                        Check2 = false;
+
+                        return new Lexema(Ln, Ch, LexName, buf, Value);
+
                 }
                 
             }
-            Console.WriteLine("biba");
+            
             return new Lexema(0, 0, LexName, "", "");
 
-            AddLexName();
-
-
-
             Console.WriteLine("Файл-" + (FileCounter));
-
-            //Console.WriteLine(buf);
-            //for (int i = 0; i < NamLexema.Count; i++)
-            //{
-            //    result = Convert.ToString(NamLexema[i].Ln) + ":"
-            //        + Convert.ToString(NamLexema[i].Ch) + "\t" + NamLexema[i].States
-            //        + "\t" + "'" + NamLexema[i].Buff + "'" + "\t" + NamLexema[i].Value + ".";
-            //    Console.WriteLine(result);
-
-
-            //    string LineResult = ResultFile.ReadLine();
-            //    //Console.WriteLine(LineResult);
-
-            //    if (result == LineResult)
-            //    {
-            //        TestResult = "Тест пройден";
-            //    }
-            //    else
-            //    {
-            //        TestResult = "Тест не пройден";
-            //       // break;
-            //    }
-
-            //}
-
-            //Console.WriteLine(TestResult);
 
         }
 

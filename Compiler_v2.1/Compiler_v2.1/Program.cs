@@ -26,14 +26,17 @@ namespace Compiler_v2._1
                 Lexer.FileCounter++;
                 var StRead = new BinaryReader(File.OpenRead(s));
                 Lexer lexer = new Lexer(StRead);
+                
+                //Lex = lexer.GetLexem();
 
-                Lex = lexer.GetLexem();
-
-                while (Lex.Ch != 0 )
+                while (StRead.PeekChar() != -1) 
                 {
+                    Lex = lexer.GetLexem();
+
                     LineResult = ResultFile.ReadLine();
                     //Console.WriteLine(LineResult);
 
+                    
                     result = Convert.ToString(Lex.Ln) + ":"
                     + Convert.ToString(Lex.Ch) + "\t" + Lex.States
                     + "\t" + "'" + Lex.Buff + "'" + "\t" + Lex.Value;
@@ -48,7 +51,6 @@ namespace Compiler_v2._1
                         TestResult = "Тест не пройден";
                         //break;
                     }
-                    Lex = lexer.GetLexem();
                     //Console.WriteLine(TestResult);
 
                 }
