@@ -21,13 +21,15 @@ namespace Compiler_v2._1
         private string[] IsReserveWords = { "program", "var", "integer", "real", "bool", "begin",
             "end", "if", "then", "else", "while", "do", "read", "write", "true", "false" };
         private string[] IsArOperator = { "*", "/", "div", "mod", "and", "or", "+", "-", "=", "<", 
-            ">", "<>", "<=", ">=", "in", "not",":" ,":="};
-        private char IsSemicolon = ';';
+            ">", "<>", "<=", ">=", "in", "not"};
+        private string[] IsSeparators = { ";", ".", ":","," };
+        private string[] IsAssigments = { ":=", "/=", "*=", "+=","-="};
 
         IFormatProvider formatter = new NumberFormatInfo { NumberDecimalSeparator = "." };
 
         string Value = "";
-        public enum State { Start, Number, Variable, ChoiceLex, ArOperator, ReserveWords, Semicolon, Integer, Real,RealExp,String, Error}
+        public enum State { Start, Number, Variable, ChoiceLex, ArOperator,
+            ReserveWords, Separators, Integer, Real,RealExp,String,Assigments, Error}
         State state;
         BinaryReader Reader;
         int Ln = 0;
@@ -117,11 +119,11 @@ namespace Compiler_v2._1
                             state = State.Number;
                             GetNext();
                         }
-                        else if (sm[0] == IsSemicolon)
+                        else if (IsSeparators.Contains(sm[0].ToString()))
                         {
                             ClearBuf();
                             AddBuf(sm[0]);
-                            state = State.Semicolon;
+                            state = State.Separators;
                             GetNext();
                         }
                         
@@ -211,14 +213,42 @@ namespace Compiler_v2._1
                         }
                         break;
 
-                    case State.Semicolon:
-                        AddValue();
-                        ClearBuf();
-                        AddLexName();
+                    case State.Separators:
+                        if(IsSeparators.Contains((buf).ToString()) 
+                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                        {
+                            AddValue();
+                            AddLexName();
 
-                        state = State.Start;
-                        Check2 = false;
-                        return new Lexema(Ln, Ch, LexName, buf, Value);
+                            state = State.Start;
+                            Check2 = false;
+                            return new Lexema(Ln, Ch, LexName, buf, Value);
+                        }
+                        else if (IsAssigments.Contains((buf).ToString())
+                            && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                        {
+                            
+                            state = State.Assigments;
+
+                        }
+                        else if (IsSeparators.Contains((buf).ToString()))
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                        }
+
+                        else
+                        {
+                            state = State.Error;
+                        }
+
+                        //if(IsArOperator.Contains((buf + sm[0]).ToString()) || IsSeparators.Contains((buf + sm[0]).ToString()))
+                        //{
+                        //    AddBuf(sm[0]);
+                        //    GetNext();
+                        //    state = State.ArOperator;
+                        //}
+                        break;
 
                     case State.Real:
                         if (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r')
@@ -301,7 +331,16 @@ namespace Compiler_v2._1
 
                         return new Lexema( Ln, Ch, LexName, buf, Value);
 
-                        
+                    case State.Assigments:
+                        AddValue();
+                        AddLexName();
+
+                        state = State.Start;
+                        Check2 = false;
+
+                        return new Lexema(Ln, Ch, LexName, buf, Value);
+
+
 
                     case State.ArOperator:
                         if (IsArOperator.Contains(buf)
@@ -316,10 +355,21 @@ namespace Compiler_v2._1
                             return new Lexema(Ln, Ch, LexName, buf, Value);
 
                         }
-                        else if (Char.IsLetter(sm[0]))
+                        else if (IsAssigments.Contains((buf).ToString())
+                          && (sm[0] == ' ' || sm[0] == '\n' || sm[0] == '\t' || sm[0] == '\0' || sm[0] == '\r'))
+                        {
+                        
+                            state = State.Assigments;
+
+                        }
+                        else if (Char.IsLetter(sm[0]) || IsArOperator.Contains((buf).ToString()) || IsAssigments.Contains((buf).ToString()))
                         {
                             AddBuf(sm[0]);
                             GetNext();
+                        }
+                        else
+                        {
+                            state = State.Error;
                         }
                         
                         break;
