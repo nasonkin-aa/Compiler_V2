@@ -29,27 +29,29 @@ namespace Compiler_v2._1
                 
                 //Lex = lexer.GetLexem();
 
-                while (StRead.PeekChar() != -1) 
+                while (StRead.PeekChar() != -1 && (lexer.Check1 || lexer.Check2)) 
                 {
                     Lex = lexer.GetLexem();
 
                     LineResult = ResultFile.ReadLine();
                     //Console.WriteLine(LineResult);
 
-                    
-                    result = Convert.ToString(Lex.Ln) + ":"
-                    + Convert.ToString(Lex.Ch) + "\t" + Lex.States
-                    + "\t" + "\"" + Lex.Buff + "\"" + "\t" + Lex.Value;
-                    Console.WriteLine(result);
+                    if((lexer.Check1 || lexer.Check2))
+                    {
+                        result = Lex.Ln + ":"
+                        + Lex.Ch + "\t" + Lex.States
+                        + "\t" + "\"" + Lex.Buff + "\"" + "\t" + Lex.Value;
+                        Console.WriteLine(result);
 
-                    if (result == LineResult)
-                    {
-                        TestResult = "Тест пройден";
-                    }
-                    else
-                    {
-                        TestResult = "Тест не пройден";
-                        //break;
+                        if (result == LineResult)
+                        {
+                            TestResult = "Тест пройден";
+                        }
+                        else
+                        {
+                            TestResult = "Тест не пройден";
+                            //break;
+                        }
                     }
                     //Console.WriteLine(TestResult);
 
