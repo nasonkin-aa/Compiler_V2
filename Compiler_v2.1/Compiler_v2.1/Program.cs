@@ -39,7 +39,7 @@ namespace Compiler_v2._1
                     
                     result = Convert.ToString(Lex.Ln) + ":"
                     + Convert.ToString(Lex.Ch) + "\t" + Lex.States
-                    + "\t" + "'" + Lex.Buff + "'" + "\t" + Lex.Value;
+                    + "\t" + "\"" + Lex.Buff + "\"" + "\t" + Lex.Value;
                     Console.WriteLine(result);
 
                     if (result == LineResult)
