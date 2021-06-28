@@ -14,7 +14,11 @@ namespace Compiler_v2._1
         public string States;
         public readonly string Value;
 
-
+        public bool IsEOf() 
+        {
+            return typeof == " ";
+            
+        }
 
         public Lexema(int ln, int ch, string lexema, string buff,string value)
         {

@@ -43,6 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exeption\BinaryOpNode.cs" />
+    <Compile Include="Exeption\EdentifierNode.cs" />
+    <Compile Include="Exeption\IntegerNode.cs" />
+    <Compile Include="Exeption\Node.cs" />
+    <Compile Include="Exeption\Parser.cs" />
+    <Compile Include="Exeption\TokenType.cs" />
+    <Compile Include="Exeption\UnaryOpNode.cs" />
     <Compile Include="Lexema.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="Program.cs" />
@@ -51,5 +58,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

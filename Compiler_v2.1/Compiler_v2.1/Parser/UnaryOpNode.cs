@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Compiler_v2._1.Exeption
 {
-    class UnaryOpNode
+    class UnaryOpNode : Node
     {
     }
 }

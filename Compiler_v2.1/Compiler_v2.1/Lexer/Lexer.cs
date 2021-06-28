@@ -431,7 +431,7 @@ namespace Compiler_v2._1
                         break;
                 }
             }
-            return new Lexema(0, 0, LexName, "", "");
+            return new Lexema(0, 0, "EOf", "", "");
             Console.WriteLine("Файл-" + (FileCounter));
         }
     }

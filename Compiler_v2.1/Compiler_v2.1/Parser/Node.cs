@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Compiler_v2._1.Exeption
 {
-    class EdentifierNode
+    abstract class Node
     {
+         public virtual void Print()
+        {
+
+        }
     }
 }

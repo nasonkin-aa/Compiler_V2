@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Compiler_v2._1.Exeption
 {
-    class Parser
+    class IntegerNode : Node
     {
+        int Value;
+        Lexema lexema;
     }
 }
