@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace Compiler_v2._1
 {
-    class IdentifierNode: Node
+    class RealNode : Node
     {
-        string Name;
         private Lexema lexema;
 
-        public IdentifierNode(Lexema lexema)
+        public RealNode(Lexema lexema)
         {
             this.lexema = lexema;
         }

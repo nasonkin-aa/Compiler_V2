@@ -43,16 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Exeption\BinaryOpNode.cs" />
-    <Compile Include="Exeption\EdentifierNode.cs" />
-    <Compile Include="Exeption\IntegerNode.cs" />
-    <Compile Include="Exeption\Node.cs" />
-    <Compile Include="Exeption\Parser.cs" />
-    <Compile Include="Exeption\TokenType.cs" />
-    <Compile Include="Exeption\UnaryOpNode.cs" />
-    <Compile Include="Lexema.cs" />
-    <Compile Include="Lexer.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Exeption\MyExeption.cs" />
+    <Compile Include="Parser\BinaryOpNode.cs" />
+    <Compile Include="Parser\IdentifierNode.cs" />
+    <Compile Include="Parser\IntegerNode.cs" />
+    <Compile Include="Parser\Node.cs" />
+    <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\RealNode.cs" />
+    <Compile Include="Parser\TokenType.cs" />
+    <Compile Include="Parser\UnaryOpNode.cs" />
+    <Compile Include="Lexer\Lexema.cs" />
+    <Compile Include="Lexer\Lexer.cs" />
+    <Compile Include="Lexer\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

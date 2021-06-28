@@ -16,7 +16,7 @@ namespace Compiler_v2._1
 
         public bool IsEOf() 
         {
-            return typeof == " ";
+            return States == "EOF";
             
         }
 

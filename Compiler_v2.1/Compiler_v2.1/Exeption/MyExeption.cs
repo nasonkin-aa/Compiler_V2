@@ -4,9 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Compiler_v2._1.Exeption
+namespace Compiler_v2._1
 {
-    class MyExeption
+    public class MyExeption : Exception
     {
+       
+        public MyExeption(string text) : base(text)
+        {
+        }
     }
 }
+

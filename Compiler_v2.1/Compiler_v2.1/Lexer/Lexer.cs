@@ -22,7 +22,7 @@ namespace Compiler_v2._1
             ">", "<>", "<=", ">=", "in", "not"};
         private string[] IsSeparators = { ";", ".", ":",",","..","[","]"};
         private string[] IsAssigments = { ":=", "/=", "*=", "+=","-="};
-        private string[] IsSpaceSymbol = { " ", "\r", "\n", "\0", "\t" };
+        private string[] IsSpaceSymbol = { " ", "\r", "\n", "\0", "\t", ",",":",";","."};
 
         IFormatProvider formatter = new NumberFormatInfo { NumberDecimalSeparator = "." };
         string Value = "";
@@ -39,9 +39,19 @@ namespace Compiler_v2._1
 
         public bool Check1 = true;
         public bool Check2 = true;
+
+        private Lexema _lexema;
         public Lexer(BinaryReader reader)
         {
             Reader = reader;
+        }
+        public void SetLexema(Lexema lexema)
+        {
+            _lexema = lexema;
+        }
+        public Lexema GetCurrentLexema()
+        {
+            return _lexema;
         }
          public Lexema AddLex(int Ln, int Ch, string LexName, string Buff,string Value)
          {
@@ -52,7 +62,7 @@ namespace Compiler_v2._1
             Check1 = false;
             Check2 = false;
             string errors = $"{Ln}:{Ch} {error}";
-            Console.WriteLine(errors);
+            throw new MyExeption(error);
         }
         private void GetNext()
         {
@@ -83,7 +93,7 @@ namespace Compiler_v2._1
         {
             buf += symb;
         }
-        public Lexema GetLexem()
+         public Lexema GetLexem()
         {
             ClearBuf();
             Check1 = true;
@@ -186,7 +196,7 @@ namespace Compiler_v2._1
                         break;
 
                     case State.Number:
-                        if (Int32.TryParse(buf, out int x)
+                        if (Int32.TryParse(buf, out int x) && sm[0] !='.'
                             && (IsSpaceSymbol.Contains(sm[0].ToString())
                             || IsSeparators.Contains(sm[0].ToString())))
                         {
@@ -224,7 +234,8 @@ namespace Compiler_v2._1
                             AddLexName();
                             state = State.Start;
                             Check2 = false;
-                            return new Lexema(Ln, Ch, LexName, buf, Value);
+                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                            return GetCurrentLexema(); 
                         }
                         else if (IsAssigments.Contains((buf).ToString())
                             && (IsSpaceSymbol.Contains(sm[0].ToString())))
@@ -249,7 +260,8 @@ namespace Compiler_v2._1
                             AddLexName();
                             state = State.Start ;
                             Check2 = false;
-                            return new Lexema(Ln, Ch, LexName, buf, Value);
+                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                            return GetCurrentLexema();
                         }
                         else if (Char.IsDigit(sm[0]))
                         {
@@ -270,7 +282,8 @@ namespace Compiler_v2._1
                             {
                                 AddValue();
                                 state = State.Start;
-                                return new Lexema(Ln, Ch, Convert.ToString(State.Integer), buf, Value);
+                                SetLexema(new Lexema(Ln, Ch, Convert.ToString(State.Integer), buf, Value));
+                                return GetCurrentLexema();
                             }
                         }
                         else
@@ -296,7 +309,8 @@ namespace Compiler_v2._1
                             AddLexName();
                             state = State.Start;
                             Check2 = false;
-                            return new Lexema(Ln, Ch, LexName, buf, Value);
+                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                            return GetCurrentLexema();
                         }
                         else
                         {
@@ -308,29 +322,33 @@ namespace Compiler_v2._1
                         AddValue();
                         AddLexName();
                         state = State.Start;
-                        Check2 = false;                     
-                        return new Lexema(Ln, Ch, LexName, buf, Value);
+                        Check2 = false;
+                        SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                        return GetCurrentLexema();
 
                     case State.Variable:
                         AddValue();
                         AddLexName();
                         state = State.Start;
                         Check2 = false;
-                        return new Lexema(Ln, Ch, LexName, buf, Value);
+                        SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                        return GetCurrentLexema();
 
                     case State.ReserveWords:
                         AddValue();
                         AddLexName();
                         state = State.Start;
                         Check2 = false;
-                        return new Lexema( Ln, Ch, LexName, buf, Value);
+                        SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                        return GetCurrentLexema();
 
                     case State.Assigments:
                         AddValue();
                         AddLexName();
                         state = State.Start;
                         Check2 = false;
-                        return new Lexema(Ln, Ch, LexName, buf, Value);
+                        SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                        return GetCurrentLexema();
 
                     case State.ArOperator:
                         if (IsArOperator.Contains(buf)
@@ -340,7 +358,8 @@ namespace Compiler_v2._1
                             AddLexName();
                             state = State.Start;
                             Check2 = false;
-                            return new Lexema(Ln, Ch, LexName, buf, Value);
+                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                            return GetCurrentLexema();
                         }
                         else if (IsAssigments.Contains((buf).ToString())
                           && (IsSpaceSymbol.Contains(sm[0].ToString())))
@@ -367,12 +386,13 @@ namespace Compiler_v2._1
                     case State.String:
                         if (sm[0] == '\'' )
                         {
-                        AddBuf(sm[0]);
-                        Value = buf.Trim(new Char[] { '\'' });
-                        AddLexName();
-                        state = State.Start;
-                        Check2 = false;
-                        return new Lexema(Ln, Ch, LexName, buf, Value);
+                            AddBuf(sm[0]);
+                            Value = buf.Trim(new Char[] { '\'' });
+                            AddLexName();
+                            state = State.Start;
+                            Check2 = false;
+                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                            return GetCurrentLexema();
                         }
                         else if(Reader.PeekChar() != -1)
                         {
@@ -431,7 +451,8 @@ namespace Compiler_v2._1
                         break;
                 }
             }
-            return new Lexema(0, 0, "EOf", "", "");
+            SetLexema(new Lexema(0, 0, "EOf", "", ""));
+            return GetCurrentLexema();
             Console.WriteLine("Файл-" + (FileCounter));
         }
     }

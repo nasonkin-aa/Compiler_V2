@@ -4,35 +4,38 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Compiler_v2._1.Exeption
+namespace Compiler_v2._1
 {
-    public class Parser
+    class Parser
     {
         private Lexer _lex;
         private TokenType _tokenType = new TokenType();
 
         public Parser(Lexer lex)
         {
-            lex = _lex;
+            _lex = lex;
         }
         public Node ParserExpr()
         {
-            Lexema lexema = _lex.GetLexem();
+            Lexema lexema = _lex.GetCurrentLexema();
             if (lexema.IsEOf())
             {
-                new MyExeption($"{lexema.Ch}: {lexema.Ln} expected expression");
-                throw new System.Exception();
+                throw new MyExeption($"{lexema.Ch}: {lexema.Ln} expected expression");
+               
             }
-            else;
+            else
             {
-                Node Left = ParserTerm();
+                Node Left = ParseTerm();
                 Lexema Operation = _lex.GetLexem();
                 while(Operation.Value == "+"
                     || Operation.Value == "-")
                 {
-                    Node Right = ParserTerm();
+             
+                    _lex.GetLexem();
+                    Node Right = ParseTerm();
+                    Right = ParseTerm();
                     Left = new BinaryOpNode(Operation, Left, Right);
-                    Operation = _lex.GetLexem();
+                    Operation = _lex.GetCurrentLexema();
                 }
                 return Left;
             }
@@ -41,20 +44,26 @@ namespace Compiler_v2._1.Exeption
         public Node ParseTerm()
         {
             Node Left = ParserFactor();
-            Lexema Operation = _lex.GetLexem();
+            Lexema Operation = _lex.GetCurrentLexema();
             while (Operation.Value == "*" || Operation.Value =="/")
             {
+                _lex.GetLexem();//
                 Node right = ParserFactor();
                 Left = new BinaryOpNode(Operation, Left, right);
-                Operation = _lex.GetLexem();
+                Operation = _lex.GetCurrentLexema();
             }
             return Left;
         }
         public Node ParserFactor()
         {
-            Lexema lexema = _lex.GetLexem();
+            Lexema lexema = _lex.GetCurrentLexema();
+            _lex.GetLexem();
             if (lexema.States == _tokenType.identifier)
                 return new IdentifierNode(lexema);
+            if (lexema.States== _tokenType.integer)
+                return new IntegerNode(lexema);
+            if (lexema.States== _tokenType.real)
+                return new RealNode(lexema);
             if(lexema.Value == "-" || lexema.Value == "+")
             {
                 Node Operand = ParserFactor();
@@ -63,10 +72,10 @@ namespace Compiler_v2._1.Exeption
             if (lexema.Value == "(")
             {
                 Node Left = ParserExpr();
-                lexema = _lex.GetLexem();
+                lexema = _lex.GetCurrentLexema();
 
                 if (lexema.Value != ")")
-                    new MyExeption($"{lexema.Ln}: {lexema.Ch} ')' expected");
+                    throw new MyExeption($"{lexema.Ln}: {lexema.Ch} ')' expected");
                 else
                 {
                     _lex.GetLexem();
@@ -74,6 +83,9 @@ namespace Compiler_v2._1.Exeption
                 }
 
             }
+            throw new MyExeption($"{lexema.Ln}: {lexema.Ch} Unexpected token");
+
         }
+
     }
 }
