@@ -97,7 +97,8 @@ namespace Compiler_v2._1
                         else if(sm[0] == '\n' || sm[0] == '\0')
                         {
                             GetNext();
-                            Ch = 0;
+                            
+                            ChCounter = 1;
                             Ln++;
                         }
 
@@ -174,7 +175,6 @@ namespace Compiler_v2._1
                         }
                         else
                         {
-                            AddBuf(sm[0]);
                             state = State.Error;
                         }
                         break;
@@ -192,6 +192,13 @@ namespace Compiler_v2._1
                             GetNext();
                             state = State.Real;
                         }
+                        else if (Char.ToLower(sm[0]) == 'e')
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                            state = State.RealExp;
+                        }
+
 
                         else if (Char.IsDigit(sm[0]) )
                         {
@@ -200,7 +207,6 @@ namespace Compiler_v2._1
                         }
                         else
                         {
-                            AddBuf(sm[0]);
                             state = State.Error;
                         }
                         break;
@@ -239,7 +245,6 @@ namespace Compiler_v2._1
                         }
                         else
                         {
-                            AddBuf(sm[0]);
                             state = State.Error;
                         }
                         
@@ -265,7 +270,6 @@ namespace Compiler_v2._1
                         }
                         else
                         {
-                            AddBuf(sm[0]);
                             state = State.Error;
                         }
                         break;
@@ -317,11 +321,6 @@ namespace Compiler_v2._1
                             AddBuf(sm[0]);
                             GetNext();
                         }
-                        else
-                        {
-                            AddBuf(sm[0]);
-                            state = State.Error;
-                        }
                         
                         break;
                     case State.String:
@@ -333,7 +332,7 @@ namespace Compiler_v2._1
 
                         state = State.Start;
                         Check2 = false;
-                        GetNext();
+
                         return new Lexema(Ln, Ch, LexName, buf, Value);
                         }
                         else if(Reader.PeekChar() != -1)
@@ -350,15 +349,15 @@ namespace Compiler_v2._1
                         break;
 
                     case State.Error:
+                        AddBuf(sm[0]);
                         AddValue();
                         AddLexName();
 
                         state = State.Start;
-                        Check1 = false;
-                        Check2 = false;
+                        GetNext();
 
                         return new Lexema(Ln, Ch, LexName, buf, Value);
-
+                        
                 }
                 
             }
