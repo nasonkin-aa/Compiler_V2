@@ -108,13 +108,15 @@ namespace Compiler_v2._1
                         {
                             if (Check1)
                             {
-                                GetNext();
+                               GetNext();
                             }
                             else
                             {
-                                state = State.Error;
+                                Check1 = false;
+                                Check2 = false;
+                                //state = State.Error;
                             }
-                            
+
                         }
                         else if(sm[0] == '\n' || sm[0] == '\0')
                         {

@@ -56,7 +56,6 @@ namespace Compiler_v2._1
                                 break;
                             }
 
-
                         }
                     }
                     catch (MyExeption ex)
@@ -80,19 +79,30 @@ namespace Compiler_v2._1
             }
             if ( args[0] == "-ps")
             {
-                try
-                {
-                    var StRead = new BinaryReader(File.OpenRead(@"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\TestPs\10-equation(code).txt"));
-                    Lexer lexer = new Lexer(StRead);
-                    lexer.GetLexem(); 
-                    Node node = new Parser(lexer).ParserExpr();
-                    string res = node.Print(1);
-                    Console.WriteLine(res);
+                string DirNameCode = @"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\TestPs";
 
-                }
-                catch(MyExeption ex)
+                IEnumerable<string> CodeFile = Directory.EnumerateFiles(DirNameCode, "*code*");
+                foreach (string s in CodeFile)
                 {
-                    Console.WriteLine(ex.Message);
+                    var StRead = new BinaryReader(File.OpenRead(s));
+                    Lexer lexer = new Lexer(StRead);
+                    while ((lexer.Check1 || lexer.Check2))
+                    {
+                        //Lexer lexer = new Lexer(StRead);
+                        try
+                        {
+                            //var StRead = new BinaryReader(File.OpenRead(@"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\TestPs\10-equation(code).txt"));
+                            lexer.GetLexem();
+                            Node node = new Parser(lexer).ParserExpr();
+                            string res = node.Print(1);
+                            Console.WriteLine(res);
+
+                        }
+                        catch (MyExeption ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
                 }
                 Console.ReadKey();
 

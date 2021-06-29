@@ -19,7 +19,6 @@ namespace Compiler_v2._1
             return States == "EOF";
             
         }
-
         public Lexema(int ln, int ch, string lexema, string buff,string value)
         {
            Ln = ln;   
