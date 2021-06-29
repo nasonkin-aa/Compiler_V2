@@ -9,6 +9,7 @@ namespace Compiler_v2._1
 {
     class Program
     {
+
         static void Main(string[] args)
         {
             string DirNameCode = @"D:\Git\Compiler_V2\Compiler_v2.1\Compiler_v2.1\Tests";
@@ -16,6 +17,8 @@ namespace Compiler_v2._1
             string TestResult = "";
             string LineResult = "";
 
+            int CountW = 0;
+            int CountF = 0;
             Lexema Lex;
             IEnumerable<string> CodeFile = Directory.EnumerateFiles(DirNameCode, "*code*");
             foreach (string s in CodeFile)
@@ -26,21 +29,19 @@ namespace Compiler_v2._1
                 Lexer.FileCounter++;
                 var StRead = new BinaryReader(File.OpenRead(s));
                 Lexer lexer = new Lexer(StRead);
-                
+
                 //Lex = lexer.GetLexem();
-
-                while (StRead.PeekChar() != -1 && (lexer.Check1 || lexer.Check2)) 
+                try
                 {
-                    Lex = lexer.GetLexem();
-
-                    LineResult = ResultFile.ReadLine();
-                    //Console.WriteLine(LineResult);
-
-                    if((lexer.Check1 || lexer.Check2))
+                    while ((lexer.Check1 || lexer.Check2))
                     {
+                        Lex = lexer.GetLexem();
+
+                        LineResult = ResultFile.ReadLine();
+                        Console.WriteLine(LineResult);
                         result = Lex.Ln + ":"
-                        + Lex.Ch + "\t" + Lex.States
-                        + "\t" + "\"" + Lex.Buff + "\"" + "\t" + Lex.Value;
+                       + Lex.Ch + "\t" + Lex.States
+                       + "\t" + "\"" + Lex.Buff + "\"" + "\t" + Lex.Value;
                         Console.WriteLine(result);
 
                         if (result == LineResult)
@@ -50,16 +51,28 @@ namespace Compiler_v2._1
                         else
                         {
                             TestResult = "Тест не пройден";
-                            //break;
+                            break;
                         }
-                    }
-                    //Console.WriteLine(TestResult);
 
+
+                    }
                 }
-                
+                catch (MyExeption ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                if (TestResult == "Тест пройден")
+                {
+                    CountW++;
+                }
+                else
+                {
+                    CountF++;
+                }
                 Console.WriteLine(TestResult);
               
             }
+            Console.WriteLine($"Пройдено тестов - {CountW}, Не пройдено тест - {CountF} ");
 
             Console.ReadKey();
         }

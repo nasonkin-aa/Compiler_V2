@@ -21,7 +21,6 @@ namespace Compiler_v2._1
             if (lexema.IsEOf())
             {
                 throw new MyExeption($"{lexema.Ch}: {lexema.Ln} expected expression");
-               
             }
             else
             {

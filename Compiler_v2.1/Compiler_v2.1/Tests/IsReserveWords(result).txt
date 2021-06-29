@@ -1,2 +1,0 @@
-1:7	ReserveWords	'program'	program
-2:3	ReserveWords	'var'	var

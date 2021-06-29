@@ -22,12 +22,12 @@ namespace Compiler_v2._1
             ">", "<>", "<=", ">=", "in", "not"};
         private string[] IsSeparators = { ";", ".", ":",",","..","[","]"};
         private string[] IsAssigments = { ":=", "/=", "*=", "+=","-="};
-        private string[] IsSpaceSymbol = { " ", "\r", "\n", "\0", "\t", ",",":",";","."};
+        private string[] IsSpaceSymbol = { " ", "\r", "\n", "\0", "\t", ",",":",";"};
 
         IFormatProvider formatter = new NumberFormatInfo { NumberDecimalSeparator = "." };
         string Value = "";
-        public enum State { Start, Number, Variable, ChoiceLex, ArOperator,
-            ReserveWords, Separators, Integer, Real,RealExp,String,Assigments,
+        public enum State { Start, Number, Identifier, ChoiceLex, ArOperator,
+            ReserveWords, Separator, Integer, Real,RealExp,String,Assignment,
             BlockComment,StringComment, Error}
         State state;
         BinaryReader Reader;
@@ -106,7 +106,15 @@ namespace Compiler_v2._1
                         Ch = ChCounter;
                         if (sm[0] == ' ' || sm[0] == '\t'  || sm[0] == '\r')
                         {
-                            GetNext();
+                            if (Reader.PeekChar() != -1)
+                            {
+                                GetNext();
+                            }
+                            else
+                            {
+                                state = State.Error;
+                            }
+                            
                         }
                         else if(sm[0] == '\n' || sm[0] == '\0')
                         {
@@ -137,7 +145,7 @@ namespace Compiler_v2._1
                                 SaveSymbol = '\0';
                             }
                             AddBuf(sm[0]);
-                            state = State.Separators;
+                            state = State.Separator;
                             GetNext();
                         }
                         else if (IsArOperator.Contains(sm[0].ToString()))
@@ -172,10 +180,10 @@ namespace Compiler_v2._1
                             && !IsArOperator.Contains(buf) 
                             && (IsSpaceSymbol.Contains(sm[0].ToString()) || sm[0] == ';'))
                         {
-                            state = State.Variable;
+                            state = State.Identifier;
                         }
                         else if (IsReserveWords.Contains(buf) 
-                            && (IsSpaceSymbol.Contains(sm[0].ToString()) || sm[0] == ';'))
+                            && (IsSpaceSymbol.Contains(sm[0].ToString()) || sm[0] == ';'||sm[0] == '.'))
                         {
                             state = State.ReserveWords;
                         }
@@ -198,7 +206,7 @@ namespace Compiler_v2._1
                     case State.Number:
                         if (Int32.TryParse(buf, out int x) && sm[0] !='.'
                             && (IsSpaceSymbol.Contains(sm[0].ToString())
-                            || IsSeparators.Contains(sm[0].ToString())))
+                            || IsSeparators.Contains(sm[0].ToString()) || IsArOperator.Contains(sm[0].ToString())))
                         {
                             state = State.Integer;
                         }
@@ -225,10 +233,9 @@ namespace Compiler_v2._1
                         }
                         break;
 
-                    case State.Separators:
-                        if (IsSeparators.Contains((buf).ToString())
-                            && (IsSpaceSymbol.Contains(sm[0].ToString())
-                            || Char.IsLetterOrDigit(sm[0])))
+                    case State.Separator:
+                        if (IsSeparators.Contains(buf)
+                            && (IsSpaceSymbol.Contains(sm[0].ToString())))
                         {
                             AddValue();
                             AddLexName();
@@ -238,9 +245,9 @@ namespace Compiler_v2._1
                             return GetCurrentLexema(); 
                         }
                         else if (IsAssigments.Contains((buf).ToString())
-                            && (IsSpaceSymbol.Contains(sm[0].ToString())))
+                            && (IsSpaceSymbol.Contains(sm[0].ToString()) || Char.IsLetterOrDigit(sm[0])))
                         {
-                            state = State.Assigments;
+                            state = State.Assignment;
                         }
                         else if (IsSeparators.Contains((buf).ToString()))
                         {
@@ -309,7 +316,7 @@ namespace Compiler_v2._1
                             AddLexName();
                             state = State.Start;
                             Check2 = false;
-                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
+                            SetLexema(new Lexema(Ln, Ch, State.Real.ToString(), buf, Value));
                             return GetCurrentLexema();
                         }
                         else
@@ -323,10 +330,11 @@ namespace Compiler_v2._1
                         AddLexName();
                         state = State.Start;
                         Check2 = false;
+
                         SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                         return GetCurrentLexema();
 
-                    case State.Variable:
+                    case State.Identifier:
                         AddValue();
                         AddLexName();
                         state = State.Start;
@@ -342,7 +350,7 @@ namespace Compiler_v2._1
                         SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                         return GetCurrentLexema();
 
-                    case State.Assigments:
+                    case State.Assignment:
                         AddValue();
                         AddLexName();
                         state = State.Start;
@@ -352,7 +360,8 @@ namespace Compiler_v2._1
 
                     case State.ArOperator:
                         if (IsArOperator.Contains(buf)
-                            && (IsSpaceSymbol.Contains(sm[0].ToString())))
+                            && (IsSpaceSymbol.Contains(sm[0].ToString()) 
+                            || Char.IsDigit(sm[0])))
                         {
                             AddValue();
                             AddLexName();
@@ -364,7 +373,7 @@ namespace Compiler_v2._1
                         else if (IsAssigments.Contains((buf).ToString())
                           && (IsSpaceSymbol.Contains(sm[0].ToString())))
                         {
-                            state = State.Assigments;
+                            state = State.Assignment;
                         }
                         else if (buf == "//")
                         {
@@ -391,6 +400,7 @@ namespace Compiler_v2._1
                             AddLexName();
                             state = State.Start;
                             Check2 = false;
+                            GetNext();
                             SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                             return GetCurrentLexema();
                         }
@@ -412,6 +422,7 @@ namespace Compiler_v2._1
                             GetNext();
                             AddBuf(sm[0]);
                             ClearBuf();
+                            state = State.Start;
                         }
                         else if (Reader.PeekChar() != -1)
                         {
@@ -429,6 +440,7 @@ namespace Compiler_v2._1
                         {
                             ClearBuf();
                             GetNext();
+                            state = State.Start;
                         }
                         else if (Reader.PeekChar() != -1)
                         {
@@ -442,7 +454,6 @@ namespace Compiler_v2._1
                         break;
 
                     case State.Error:
-                        AddBuf(sm[0]);
                         AddValue();
                         AddLexName();
                         state = State.Start;
