@@ -16,5 +16,13 @@ namespace Compiler_v2._1
             this.operand = operand;
             this.lexema = lexema;
         }
+        public override string GetValue()
+        {
+            return Convert.ToString(lexema.Value);
+        }
+        public override string Print(int prioryty = 0)
+        {
+            return $"{GetValue()} {operand.GetValue()}";
+        }
     }
 }

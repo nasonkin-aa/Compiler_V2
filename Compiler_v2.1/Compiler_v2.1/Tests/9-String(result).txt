@@ -1,4 +1,0 @@
-1:1	String	"''"
-2:1	String	"'andrey'"	andrey
-3:1	String	"'a!Dd32d'"	a!Dd32d
-syntax error: 'fxx

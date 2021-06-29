@@ -1,3 +1,0 @@
-1:1	Identifier	"_poopa"	_poopa
-2:1	Identifier	"Boba"	Boba
-3:1	Identifier	"Pupsen12"	Pupsen12

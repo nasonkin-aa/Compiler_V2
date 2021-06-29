@@ -18,5 +18,19 @@ namespace Compiler_v2._1
             this.left = left;
             this.right = right;
         }
+        public override string GetValue()
+        {
+            return operation.Value;
+        }
+
+        override public string Print(int priority = 1)
+        {
+            string val = operation.Value;
+            string rightOp = right.Print(priority + 1);
+            string leftOp = left.Print(priority + 1);
+
+            return $"{val}\n{new string(' ', priority * 6)}{leftOp}\n{new string(' ', priority * 6)}{rightOp}";
+        }
     }
 }
+

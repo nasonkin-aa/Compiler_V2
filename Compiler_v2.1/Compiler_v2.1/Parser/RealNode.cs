@@ -14,5 +14,15 @@ namespace Compiler_v2._1
         {
             this.lexema = lexema;
         }
+        public override string GetValue()
+        {
+            return Convert.ToString(lexema.Value);
+        }
+        public override string Print(int priority = 0)
+        {
+            return GetValue();
+        }
+
+
     }
 }

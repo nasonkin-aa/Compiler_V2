@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Compiler_v2._1
 {
-    public abstract class Node
+    abstract class Node
     {
-         public virtual void Print()
-        {
+        abstract public string Print(int priority = 0);
+        abstract public string GetValue();
 
-        }
     }
 }

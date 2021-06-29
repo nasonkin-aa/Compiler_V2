@@ -20,7 +20,7 @@ namespace Compiler_v2._1
             "end", "if", "then", "else", "while", "do", "read", "write", "true", "false" };
         private string[] IsArOperator = { "*", "/", "div", "mod", "and", "or", "+", "-", "=", "<", 
             ">", "<>", "<=", ">=", "in", "not"};
-        private string[] IsSeparators = { ";", ".", ":",",","..","[","]"};
+        private string[] IsSeparators = { ";", ".", ":",",","..","[","]","(",")"};
         private string[] IsAssigments = { ":=", "/=", "*=", "+=","-="};
         private string[] IsSpaceSymbol = { " ", "\r", "\n", "\0", "\t", ",",":",";"};
 
@@ -106,7 +106,7 @@ namespace Compiler_v2._1
                         Ch = ChCounter;
                         if (sm[0] == ' ' || sm[0] == '\t'  || sm[0] == '\r')
                         {
-                            if (Reader.PeekChar() != -1)
+                            if (Check1)
                             {
                                 GetNext();
                             }
@@ -178,7 +178,9 @@ namespace Compiler_v2._1
                     case State.ChoiceLex:
                         if (!IsReserveWords.Contains(buf)
                             && !IsArOperator.Contains(buf) 
-                            && (IsSpaceSymbol.Contains(sm[0].ToString()) || sm[0] == ';'))
+                            && (IsSpaceSymbol.Contains(sm[0].ToString()) 
+                            || IsSpaceSymbol.Contains(sm[0].ToString())
+                            || IsArOperator.Contains(sm[0].ToString())))
                         {
                             state = State.Identifier;
                         }
@@ -188,7 +190,9 @@ namespace Compiler_v2._1
                             state = State.ReserveWords;
                         }
                         else if (IsArOperator.Contains(buf)
-                            && (IsSpaceSymbol.Contains(sm[0].ToString()) || sm[0] == ';'))
+                            && (IsSpaceSymbol.Contains(sm[0].ToString()) 
+                            || IsSeparators.Contains(sm[0].ToString())
+                            || Char.IsLetterOrDigit(sm[0])))
                         {
                             state = State.ArOperator;
                         }
@@ -235,7 +239,9 @@ namespace Compiler_v2._1
 
                     case State.Separator:
                         if (IsSeparators.Contains(buf)
-                            && (IsSpaceSymbol.Contains(sm[0].ToString())))
+                            && (IsSpaceSymbol.Contains(sm[0].ToString()) 
+                            || Char.IsLetterOrDigit(sm[0])
+                            || IsArOperator.Contains(sm[0].ToString())))
                         {
                             AddValue();
                             AddLexName();
@@ -361,7 +367,7 @@ namespace Compiler_v2._1
                     case State.ArOperator:
                         if (IsArOperator.Contains(buf)
                             && (IsSpaceSymbol.Contains(sm[0].ToString()) 
-                            || Char.IsDigit(sm[0])))
+                            || Char.IsLetterOrDigit(sm[0]))|| IsSeparators.Contains(sm[0].ToString()))
                         {
                             AddValue();
                             AddLexName();

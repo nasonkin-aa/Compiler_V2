@@ -25,14 +25,13 @@ namespace Compiler_v2._1
             else
             {
                 Node Left = ParseTerm();
-                Lexema Operation = _lex.GetLexem();
+                Lexema Operation = _lex.GetCurrentLexema();
                 while(Operation.Value == "+"
                     || Operation.Value == "-")
                 {
              
                     _lex.GetLexem();
                     Node Right = ParseTerm();
-                    Right = ParseTerm();
                     Left = new BinaryOpNode(Operation, Left, Right);
                     Operation = _lex.GetCurrentLexema();
                 }
@@ -75,11 +74,9 @@ namespace Compiler_v2._1
 
                 if (lexema.Value != ")")
                     throw new MyExeption($"{lexema.Ln}: {lexema.Ch} ')' expected");
-                else
-                {
+                
                     _lex.GetLexem();
                     return Left;
-                }
 
             }
             throw new MyExeption($"{lexema.Ln}: {lexema.Ch} Unexpected token");
