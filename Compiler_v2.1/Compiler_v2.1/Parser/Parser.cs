@@ -43,9 +43,10 @@ namespace Compiler_v2._1
         {
             Node Left = ParserFactor();
             Lexema Operation = _lex.GetCurrentLexema();
-            while (Operation.Value == "*" || Operation.Value =="/")
+            while (Operation.Value == "*" 
+                || Operation.Value =="/")
             {
-                _lex.GetLexem();//
+                _lex.GetLexem();
                 Node right = ParserFactor();
                 Left = new BinaryOpNode(Operation, Left, right);
                 Operation = _lex.GetCurrentLexema();
@@ -75,8 +76,8 @@ namespace Compiler_v2._1
                 if (lexema.Value != ")")
                     throw new MyExeption($"{lexema.Ln}: {lexema.Ch} ')' expected");
                 
-                    _lex.GetLexem();
-                    return Left;
+                _lex.GetLexem();
+                return Left;
 
             }
             throw new MyExeption($"{lexema.Ln}: {lexema.Ch} Unexpected token");

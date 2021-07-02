@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Compiler_v2._1
 {
@@ -28,7 +29,7 @@ namespace Compiler_v2._1
         string Value = "";
         public enum State { Start, Number, Identifier, ChoiceLex, ArOperator,
             ReserveWords, Separator, Integer, Real,RealExp,String,Assignment,
-            BlockComment,StringComment, Error}
+            BlockComment,StringComment,CtrlString, Error}
         State state;
         BinaryReader Reader;
         int Ln = 0;
@@ -37,8 +38,8 @@ namespace Compiler_v2._1
         string LexName;
         char SaveSymbol = '\0';
 
-        public bool Check1 = true;
-        public bool Check2 = true;
+        public bool NotEof = true;
+        public bool NotFoundLexem = true;
 
         private Lexema _lexema;
         public Lexer(BinaryReader reader)
@@ -59,8 +60,8 @@ namespace Compiler_v2._1
          }
         public void Errors(string error)
         {
-            Check1 = false;
-            Check2 = false;
+            NotEof = false;
+            NotFoundLexem = false;
             string errors = $"{Ln}:{Ch} {error}";
             throw new MyExeption(error);
         }
@@ -74,7 +75,7 @@ namespace Compiler_v2._1
             else
             {
                 sm[0] = ' ';
-                Check1 = false;
+                NotEof = false;
             }
         }
         private void AddLexName()
@@ -96,27 +97,25 @@ namespace Compiler_v2._1
          public Lexema GetLexem()
         {
             ClearBuf();
-            Check1 = true;
-            while (  Check2 || Check1   )
+            NotEof = true;
+            while (NotFoundLexem || NotEof)
             {
-                Check2 = true;
+                NotFoundLexem = true;
                 switch (state)
                 {
                     case State.Start:
                         Ch = ChCounter;
                         if (sm[0] == ' ' || sm[0] == '\t'  || sm[0] == '\r')
                         {
-                            if (Check1)
+                            if (NotEof)
                             {
                                GetNext();
                             }
                             else
                             {
-                                Check1 = false;
-                                Check2 = false;
-                                //state = State.Error;
+                                NotEof = false;
+                                NotFoundLexem = false;
                             }
-
                         }
                         else if(sm[0] == '\n' || sm[0] == '\0')
                         {
@@ -171,6 +170,13 @@ namespace Compiler_v2._1
                             state = State.BlockComment;
                             GetNext();
                         }
+                        else if (sm[0] == '#')
+                        {
+                            ClearBuf();
+                            AddBuf(sm[0]);
+                            state = State.CtrlString;
+                            GetNext();
+                        }
                         else
                         {
                             state = State.Error;
@@ -180,7 +186,7 @@ namespace Compiler_v2._1
                     case State.ChoiceLex:
                         if (!IsReserveWords.Contains(buf)
                             && !IsArOperator.Contains(buf) 
-                            && (IsSpaceSymbol.Contains(sm[0].ToString()) 
+                            && (IsSeparators.Contains(sm[0].ToString()) 
                             || IsSpaceSymbol.Contains(sm[0].ToString())
                             || IsArOperator.Contains(sm[0].ToString())))
                         {
@@ -194,7 +200,7 @@ namespace Compiler_v2._1
                         else if (IsArOperator.Contains(buf)
                             && (IsSpaceSymbol.Contains(sm[0].ToString()) 
                             || IsSeparators.Contains(sm[0].ToString())
-                            || Char.IsLetterOrDigit(sm[0])))
+                            || Char.IsDigit(sm[0])))
                         {
                             state = State.ArOperator;
                         }
@@ -241,14 +247,15 @@ namespace Compiler_v2._1
 
                     case State.Separator:
                         if (IsSeparators.Contains(buf)
+                            && (!IsSeparators.Contains(sm[0].ToString())
                             && (IsSpaceSymbol.Contains(sm[0].ToString()) 
                             || Char.IsLetterOrDigit(sm[0])
-                            || IsArOperator.Contains(sm[0].ToString())))
+                            ||( IsArOperator.Contains(sm[0].ToString()) && sm[0] != '='))))
                         {
                             AddValue();
                             AddLexName();
                             state = State.Start;
-                            Check2 = false;
+                            NotFoundLexem = false;
                             SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                             return GetCurrentLexema(); 
                         }
@@ -274,7 +281,7 @@ namespace Compiler_v2._1
                             AddValue();
                             AddLexName();
                             state = State.Start ;
-                            Check2 = false;
+                            NotFoundLexem = false;
                             SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                             return GetCurrentLexema();
                         }
@@ -323,7 +330,7 @@ namespace Compiler_v2._1
                             Value = Convert.ToString(float.Parse(buf, formatter));
                             AddLexName();
                             state = State.Start;
-                            Check2 = false;
+                            NotFoundLexem = false;
                             SetLexema(new Lexema(Ln, Ch, State.Real.ToString(), buf, Value));
                             return GetCurrentLexema();
                         }
@@ -337,8 +344,7 @@ namespace Compiler_v2._1
                         AddValue();
                         AddLexName();
                         state = State.Start;
-                        Check2 = false;
-
+                        NotFoundLexem = false;
                         SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                         return GetCurrentLexema();
 
@@ -346,7 +352,7 @@ namespace Compiler_v2._1
                         AddValue();
                         AddLexName();
                         state = State.Start;
-                        Check2 = false;
+                        NotFoundLexem = false;
                         SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                         return GetCurrentLexema();
 
@@ -354,7 +360,7 @@ namespace Compiler_v2._1
                         AddValue();
                         AddLexName();
                         state = State.Start;
-                        Check2 = false;
+                        NotFoundLexem = false;
                         SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                         return GetCurrentLexema();
 
@@ -362,7 +368,7 @@ namespace Compiler_v2._1
                         AddValue();
                         AddLexName();
                         state = State.Start;
-                        Check2 = false;
+                        NotFoundLexem = false;
                         SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                         return GetCurrentLexema();
 
@@ -374,7 +380,7 @@ namespace Compiler_v2._1
                             AddValue();
                             AddLexName();
                             state = State.Start;
-                            Check2 = false;
+                            NotFoundLexem = false;
                             SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
                             return GetCurrentLexema();
                         }
@@ -401,18 +407,49 @@ namespace Compiler_v2._1
                         break;
 
                     case State.String:
-                        if (sm[0] == '\'' )
+                        if (sm[0] == '\'')
                         {
+                            string value = null;
                             AddBuf(sm[0]);
-                            Value = buf.Trim(new Char[] { '\'' });
+                            //Value = buf.Trim(new Char[] { '\'' });
                             AddLexName();
                             state = State.Start;
-                            Check2 = false;
+                            NotFoundLexem = false;
                             GetNext();
-                            SetLexema(new Lexema(Ln, Ch, LexName, buf, Value));
-                            return GetCurrentLexema();
+                            if (sm[0] != '#' && buf[buf.Length -1] == '\'')
+                            {
+                                NotFoundLexem = true;
+                                Regex regex = new Regex(@"#\d+");
+
+                                 value = regex.Replace(buf, delegate (Match m){
+                                    int res = Int32.Parse(m.Value.Substring(1));
+                                    return ((char)res).ToString();
+
+                                });
+
+                                value = Regex.Replace(value, "'", "");
+                               // value = $"'{value}'";
+
+                                SetLexema(new Lexema(Ln, Ch, LexName, buf, value));
+                                return GetCurrentLexema();
+                               
+                              
+
+                            }
+                            else if( buf[buf.Length - 1] == '\'')
+                            {
+                                SetLexema(new Lexema(Ln, Ch, LexName, buf, value));
+                                return GetCurrentLexema();
+
+                            }
+                            else
+                            {
+                                AddBuf(sm[0]);
+                                GetNext();
+                                state = State.CtrlString;
+                            }
                         }
-                        else if(Reader.PeekChar() != -1)
+                        else if (Reader.PeekChar() != -1)
                         {
                             AddBuf(sm[0]);
                             GetNext();
@@ -461,6 +498,57 @@ namespace Compiler_v2._1
                         }
                         break;
 
+                    case State.CtrlString:
+                        if (Char.IsDigit(sm[0]))
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                            state = State.CtrlString;
+                        }
+                        else if (sm[0] == '\'')
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                            state = State.String;
+                        }
+                        else if (Char.IsLetter(sm[0]))
+                        {
+                            AddBuf(sm[0]);
+                            GetNext();
+                            state = State.Error;
+                        }
+                        else
+                        {
+                            if (!Char.IsDigit(buf[buf.Length - 1]))
+                            {
+                                Errors("syntax error: " + buf);
+                            }
+                            else
+                            {
+                                Regex regex = new Regex(@"#\d+");
+                                string value = regex.Replace(buf, (Match m) => {
+                                    int res = Int32.Parse(m.Value.Substring(1));
+                                    return ((char)res).ToString();
+                                });
+
+                                value = Regex.Replace(value, "'", "");
+                                state = State.Start;
+                                //Console.WriteLine(sm[0]);
+                                if (sm[0] == '#')
+                                {
+                                    AddBuf(sm[0]);
+                                    GetNext();
+                                    state = State.CtrlString ;
+                                }
+                                else
+                                {
+                                    SetLexema(new Lexema(Ln, Ch, LexName, buf, value));
+                                    return GetCurrentLexema();
+                                }
+                            }
+                        }
+                        break;
+
                     case State.Error:
                         AddValue();
                         AddLexName();
@@ -472,7 +560,6 @@ namespace Compiler_v2._1
             }
             SetLexema(new Lexema(0, 0, "EOf", "", ""));
             return GetCurrentLexema();
-            Console.WriteLine("Файл-" + (FileCounter));
         }
     }
 }
